@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xzsd.pc.store.dao.StoreDao">
+    <!--检验门店是否存在-->
+    <select id="countStoreAccount" parameterType="com.xzsd.pc.store.entity.StoreInfo" resultType="int">
+        select
+            count(*)
+        from
+            t_sys_store
+        where
+            store_name = #{storeName}
+    </select>
+    <!--新增门店-->
+    <insert id="addStore" parameterType="com.xzsd.pc.store.entity.StoreInfo">
+        insert into t_sys_store
+            (store_id,
+            store_name,
+            store_phone,
+            store_manager_id,
+            bussiness_code,
+            store_province_id,
+            store_city_id,
+            store_area_id,
+            store_address,
+            is_deleted,
+            create_by,
+            gmt_create,
+            last_modified_by,
+            gmt_modified,
+            version)
+        values
+            (#{storeId},
+            #{storeName},
+            #{storePhone},
+            #{storeManagerId},
+            #{bussinessCode},
+            #{storeProvinceId},
+            #{storeCityId},
+            #{storeAreaId},
+            #{storeAddress},
+            0,
+            #{createBy},
+            now(),
+            #{lastModifiedBy},
+            now(),
+            0)
+    </insert>
+    <!--修改门店-->
+    <update id="updateStoreById" parameterType="com.xzsd.pc.store.entity.StoreInfo">
+        update
+            t_sys_store
+        set
+            store_id = #{storeId},
+            store_name = #{storeName},
+            store_phone = #{storePhone},
+            store_manager_id = #{storeManagerId},
+            bussiness_code = #{bussinessCode},
+            store_province_id = #{storeProvinceId},
+            store_city_id = #{storeCityId},
+            store_area_id = #{storeAreaId},
+            store_address = #{storeAddress},
+            last_modified_by    = #{lastModifiedBy},
+            gmt_modified    = now(),
+            version         = version + 1
+        where
+            store_id = #{storeId}
+            and version = #{version}
+    </update>
+    <!--删除门店-->
+    <update id="deleteStore" parameterType="com.xzsd.pc.store.entity.StoreInfo">
+        update
+            t_sys_store
+        set
+            is_deleted = 1,
+            gmt_modified = now(),
+            last_modified_by = #{updateUserId},
+            version = version + 1
+        where
+            store_id in
+        <foreach item="item" index="index" collection="listDeleteStoreId" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <!--门店列表-->
+    <select id="listStores" parameterType="com.xzsd.pc.store.entity.StoreInfo" resultType="com.xzsd.pc.store.entity.StoreInfo">
+        select
+            store_id storeId,
+            store_name storeName,
+            store_phone storePhone,
+            store_address storeAddress,
+            name storeManagerName,
+            invite_code inviteCode,
+            user_account storeAccount
+        from
+            t_sys_store a,t_sys_user b
+        where
+            a.user_id = b.user_id
+            and a.is_deleted = 0
+        <if test="storeId != null and storeId !=''">
+            and store_id like concat('%',#{storeId},'%')
+        </if>
+        <if test="storeName != null and storeName !=''">
+            and store_name like concat('%',#{storeName},'%')
+        </if>
+        <if test="storeManagerName != null and storeManagerName !=''">
+            and name like concat('%',#{storeManagerName},'%')
+        </if>
+        <if test="storeProvinceId != null and storeProvinceId !=''">
+            and store_province_id like concat('%',#{storeProvinceId},'%')
+        </if>
+        <if test="storeCityId != null and storeCityId !=''">
+            and store_city_id like concat('%',#{storeCityId},'%')
+        </if>
+        <if test="storeAreaId != null and storeAreaId !=''">
+            and store_area_id like concat('%',#{storeAreaId},'%')
+        </if>
+    </select>
+    <!--门店详情-->
+    <select id="findStoreById" parameterType="java.lang.String" resultType="com.xzsd.pc.store.entity.StoreInfo">
+        select
+            store_name storeName,
+            store_phone storePhone,
+            store_manager_id storeManagerId,
+            bussiness_code bussinessCode,
+            store_province_id storeProvinceId,
+            store_city_id storeCityId,
+            store_area_id storeAreaId,
+            store_address storeAddress
+        from
+            t_sys_store
+        where
+            store_id = #{storeId}
+    </select>
+    <!--门店所在位置分类-->
+    <select id="queryStoreLocalClassify" parameterType="java.lang.String" resultType="com.xzsd.pc.store.entity.StoreDataInfo">
+        select
+            k classifyId,
+            v classifyName
+        from
+            t_sys_dictionary
+        where
+            last_classify_id = #{lastClassifyId}
+    </select>
+</mapper>

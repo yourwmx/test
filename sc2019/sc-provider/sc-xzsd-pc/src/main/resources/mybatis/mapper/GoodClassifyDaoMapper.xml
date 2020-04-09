@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xzsd.pc.goodClassify.dao.GoodClassifyDao">
+
+    <!--新增商品分类-->
+    <insert id="addGoodClassify" parameterType="com.xzsd.pc.goodClassify.entity.GoodClassifyInfo">
+        insert into t_sys_classify
+            (classify_id,
+             classify_name,
+             classify_note,
+             last_classify_id,
+             is_deleted,
+             create_by,
+             gmt_create,
+             last_modified_by,
+             gmt_modified,
+             version)
+        values
+            (#{classifyId},
+             #{classifyName},
+             #{classifyNote},
+             #{lastClassifyId},
+             0,
+             #{createBy},
+             now(),
+             #{lastModifiedBy},
+             now(),
+             0)
+    </insert>
+
+    <!--统计商品分类数量-->
+    <select id="countGoodClassifyAccount" parameterType="com.xzsd.pc.goodClassify.entity.GoodClassifyInfo" resultType="int">
+        select count(*)
+        from t_sys_classify
+        where is_deleted = 0
+        and classify_name = #{classifyName}
+    </select>
+    <!--修改商品分类-->
+    <update id="updateGoodClassifyById" parameterType="com.xzsd.pc.goodClassify.entity.GoodClassifyInfo">
+        update t_sys_classify
+        set
+            classify_name   = #{classifyName},
+            classify_note   = #{classifyNote},
+            last_modified_by    = #{lastModifiedBy},
+            gmt_modified    = now(),
+            version         = version + 1
+        where classify_id = #{classifyId}
+            and version = #{version}
+    </update>
+    <!--查询商品分类编号-->
+    <select id="queryGoodClassifyIdByName" parameterType="java.lang.String" resultType="java.lang.String">
+        select classify_id
+        from t_sys_classify
+        where classify_name = #{goodClassifyName}
+    </select>
+    <!--删除商品分类-->
+    <update id="deleteGoodClassifyById" parameterType="java.lang.String">
+        update t_sys_classify
+        set
+        is_deleted = 1,
+        gmt_modified = now(),
+        last_modified_by = #{updateUserId},
+        version = version + 1
+        where classify_id = #{classifyId}
+    </update>
+    <!--查询商品一级分类-->
+    <select id="queryTempGoodClassify" resultType="com.xzsd.pc.goodClassify.entity.GoodClassifyDataInfo">
+        select
+            classify_id tempClassifyId,
+            classify_name tempClassifyName
+        from
+            t_sys_classify
+        where
+            last_classify_id = 0
+    </select>
+    <!--查询商品二级分类-->
+    <select id="queryNextGoodClassify" parameterType="java.lang.String" resultType="com.xzsd.pc.goodClassify.entity.GoodClassifyDataInfo">
+        select
+            classify_id tempClassifyId,
+            classify_name tempClassifyName
+        from
+            t_sys_classify
+        where
+            last_classify_id = #{nextClassifyId}
+    </select>
+    <!--商品分类详情-->
+    <select id="findGoodClassifyById" parameterType="java.lang.String" resultType="com.xzsd.pc.goodClassify.entity.GoodClassifyInfo">
+        select
+            classify_name classifyName,
+            classify_note classifyNote
+        from
+            t_sys_classify
+        where
+            classify_id = #{classifyId}
+    </select>
+    <!--查询是否为一级分类-->
+    <select id="queryLastGoodClassify" parameterType="java.lang.String" resultType="int">
+        select
+            last_classify_id
+        from
+            t_sys_classify
+        where
+            classify_id = #{classifyId}
+    </select>
+</mapper>
